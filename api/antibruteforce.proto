@@ -1,0 +1,33 @@
+syntax = "proto3";
+package antibruteforce;
+option go_package = "./;pb";
+
+import "google/protobuf/empty.proto";
+
+service AntiBruteforce {
+  rpc Check(CheckRequest) returns (CheckResponse);
+  rpc Reset(ResetRequest) returns (google.protobuf.Empty);
+  rpc AddToBlacklist(NetworkRequest) returns (google.protobuf.Empty);
+  rpc RemoveFromBlacklist(NetworkRequest) returns (google.protobuf.Empty);
+  rpc AddToWhitelist(NetworkRequest) returns (google.protobuf.Empty);
+  rpc RemoveFromWhitelist(NetworkRequest) returns (google.protobuf.Empty);
+}
+
+message CheckRequest {
+  string login = 1;
+  string password = 2;
+  string ip = 3;
+}
+
+message CheckResponse {
+  bool ok = 1;
+}
+
+message ResetRequest {
+  string login = 1;
+  string ip = 2;
+}
+
+message NetworkRequest {
+  string network = 1;
+}
