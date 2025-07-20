@@ -20,7 +20,7 @@ jobs:
       - name: Linters
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.62.2
+          version: v1.64.8
           working-directory: ./internal
 
       - name: Install protoc and Go plugins
