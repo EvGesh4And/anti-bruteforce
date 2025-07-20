@@ -17,6 +17,10 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: make lint
+        run: make lint
+        working-directory: .
+
       - name: Install protoc and Go plugins
         run: |
           sudo apt-get update
@@ -31,10 +35,6 @@ jobs:
 
       - name: make generate
         run: make generate
-        working-directory: .
-
-      - name: make lint
-        run: make lint
         working-directory: .
 
       - name: make test
