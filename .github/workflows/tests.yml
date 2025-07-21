@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  tests_by_makefile:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go
@@ -20,7 +20,7 @@ jobs:
       - name: make lint
         run: make lint
         working-directory: .
-
+  test:
       - name: Install protoc and Go plugins
         run: |
           sudo apt-get update
