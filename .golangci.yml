@@ -21,12 +21,19 @@ linters-settings:
           - github.com/BurntSushi/toml
           - github.com/caarlos0/env/v10
           - github.com/lmittmann/tint
+          - golang.org/x/sync/errgroup
+          - google.golang.org/grpc
+          - google.golang.org/protobuf/types/known/emptypb
+          - 
       Test:
         files:
           - $test
         allow:
           - $gostd
           - github.com/stretchr/testify/require
+          - github.com/EvGesh4And/anti-bruteforce
+          - google.golang.org/grpc
+          - github.com/stretchr/testify/assert
 
 issues:
   exclude-rules:

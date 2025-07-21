@@ -1,8 +1,12 @@
 package config
 
+import "time"
+
 // SecurityConfig holds the configuration for security.
 type SecurityConfig struct {
-	N int `toml:"n"`
-	M int `toml:"m"`
-	K int `toml:"k"`
+	LoginRate       int           `toml:"loginrate"`
+	PassRate        int           `toml:"passrate"`
+	IPRate          int           `toml:"iprate"`
+	CleanupInterval time.Duration `toml:"cleanupInterval"`
+	BucketMaxIdle   time.Duration `toml:"bucketMaxIdle"`
 }

@@ -1,4 +1,3 @@
-// Package config provides configuration structures and loading functions.
 package config
 
 // Config holds the application configuration.

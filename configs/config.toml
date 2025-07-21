@@ -8,6 +8,8 @@ host = "0.0.0.0"
 port = 8081
 
 [security]
-n = 10
-m = 100
-k = 1000
+loginrate = 10
+passrate = 100
+iprate = 1000
+cleanupInterval = "10m"
+bucketMaxIdle = "15m"

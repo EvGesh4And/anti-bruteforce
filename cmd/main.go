@@ -2,13 +2,18 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/EvGesh4And/anti-bruteforce/config"
+	"github.com/EvGesh4And/anti-bruteforce/internal/antibruteforce"
 	"github.com/EvGesh4And/anti-bruteforce/internal/logger"
+	"golang.org/x/sync/errgroup"
 )
 
 var pathConfigFile string
@@ -34,18 +39,27 @@ func main() {
 		return
 	}
 
-	_, closer, err := logger.NewSlogLogger(cfg.Logger)
+	lg, closer, err := logger.NewSlogLogger(cfg.Logger)
 	if err != nil {
 		log.Printf("error initializing logger: %v", err)
 		return
 	}
 	if closer != nil {
-		defer func() {
-			if err := closer.Close(); err != nil {
-				log.Printf("error closing logger: %v", err)
-			}
-		}()
+		defer closer.Close()
 	}
 
-	fmt.Println(cfg)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	svc := antibruteforce.NewService(lg, cfg.Security)
+	defer svc.Shutdown()
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	startGRPCServer(ctx, g, cfg.GRPC, lg, svc)
+
+	if err := g.Wait(); err != nil {
+		log.Printf("service stopped with error: %v", err)
+		return
+	}
 }
