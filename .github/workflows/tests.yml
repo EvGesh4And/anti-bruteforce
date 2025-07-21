@@ -21,6 +21,8 @@ jobs:
         run: make lint
         working-directory: .
   test:
+    runs-on: ubuntu-latest
+    steps:
       - name: Install protoc and Go plugins
         run: |
           sudo apt-get update
