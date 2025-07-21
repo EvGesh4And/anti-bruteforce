@@ -3,7 +3,8 @@ module github.com/EvGesh4And/anti-bruteforce
 go 1.24.3
 
 require (
-	github.com/google/uuid v1.6.0
+	github.com/BurntSushi/toml v1.5.0
+	github.com/caarlos0/env/v10 v10.0.0
 	github.com/lmittmann/tint v1.1.2
 	github.com/stretchr/testify v1.10.0
 )

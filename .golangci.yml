@@ -17,11 +17,16 @@ linters-settings:
           - "!$test"
         allow:
           - $gostd
+          - github.com/EvGesh4And/anti-bruteforce
+          - github.com/BurntSushi/toml
+          - github.com/caarlos0/env/v10
+          - github.com/lmittmann/tint
       Test:
         files:
           - $test
         allow:
           - $gostd
+          - github.com/stretchr/testify/require
 
 issues:
   exclude-rules:

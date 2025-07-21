@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 // HandlerMiddleware adds context fields to every log record.
@@ -28,19 +25,24 @@ func (h *HandlerMiddleware) Enabled(ctx context.Context, rec slog.Level) bool {
 
 // Handle enriches the record with context information before logging.
 func (h *HandlerMiddleware) Handle(ctx context.Context, rec slog.Record) error {
-	if c, ok := ctx.Value(key).(logCtx); ok {
-		if c.Component != "" {
-			rec.Add("component", c.Component)
-		}
-		if c.Method != "" {
-			rec.Add("method", c.Method)
-		}
-		if c.EventID != uuid.Nil {
-			rec.Add("eventID", c.EventID.String())
-		}
-		if !c.Start.IsZero() {
-			rec.Add("start", c.Start.Format(time.RFC3339))
-		}
+	c, ok := ctx.Value(key).(logCtx)
+	if !ok {
+		return h.next.Handle(ctx, rec)
+	}
+	if c.Component != "" {
+		rec.Add("component", c.Component)
+	}
+	if c.Method != "" {
+		rec.Add("method", c.Method)
+	}
+	if c.Login != "" {
+		rec.Add("login", c.Login)
+	}
+	if c.Password != "" {
+		rec.Add("password", c.Password)
+	}
+	if c.IP != "" {
+		rec.Add("ip", c.IP)
 	}
 	return h.next.Handle(ctx, rec)
 }
@@ -62,15 +64,16 @@ func (h *HandlerMiddleware) WithGroup(name string) slog.Handler {
 type logCtx struct {
 	Component string
 	Method    string
-	EventID   uuid.UUID
-	Start     time.Time
+	Login     string
+	Password  string
+	IP        string
 }
 
 type keyType int
 
 const key = keyType(0)
 
-// WithLogMethod attaches a method name to the logging context.
+// WithLogComponent attaches a component name to the logging context.
 func WithLogComponent(ctx context.Context, component string) context.Context {
 	if c, ok := ctx.Value(key).(logCtx); ok {
 		c.Component = component
@@ -92,25 +95,25 @@ func WithLogMethod(ctx context.Context, method string) context.Context {
 	})
 }
 
-// WithLogEventID attaches an event ID to the logging context.
-func WithLogEventID(ctx context.Context, eventID uuid.UUID) context.Context {
+// WithLogLogin attaches a login to the logging context.
+func WithLogLogin(ctx context.Context, login string) context.Context {
 	if c, ok := ctx.Value(key).(logCtx); ok {
-		c.EventID = eventID
+		c.Login = login
 		return context.WithValue(ctx, key, c)
 	}
 	return context.WithValue(ctx, key, logCtx{
-		EventID: eventID,
+		Login: login,
 	})
 }
 
-// WithLogStart adds a start time to the logging context.
-func WithLogStart(ctx context.Context, start time.Time) context.Context {
+// WithLogPassword attaches a password to the logging context.
+func WithLogPassword(ctx context.Context, password string) context.Context {
 	if c, ok := ctx.Value(key).(logCtx); ok {
-		c.Start = start
+		c.Password = password
 		return context.WithValue(ctx, key, c)
 	}
 	return context.WithValue(ctx, key, logCtx{
-		Start: start,
+		Password: password,
 	})
 }
 

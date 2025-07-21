@@ -2,62 +2,56 @@ package logger
 
 import (
 	"bytes"
-	"fmt"
-	"io"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func captureOutput(f func(w io.Writer)) string {
-	old := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f(w)
-
-	w.Close()
-	os.Stdout = old
-
+func TestLogger_DebugLevel(t *testing.T) {
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
-	return buf.String()
+	lg := New("debug", &buf, false)
+	lg.Debug("event validation check")
+	lg.Info("event added")
+	lg.Warn("connection lost, trying to restore it")
+	require.Contains(t, buf.String(), "event validation check")
+	require.Contains(t, buf.String(), "event added")
+	require.Contains(t, buf.String(), "connection lost, trying to restore it")
 }
 
-func TestLogger_Info(t *testing.T) {
-	output := captureOutput(func(w io.Writer) {
-		log := New("debug", w, false)
-		log.Debug("event validation check", "event_id", 10)
-	})
+func TestLogger_InfoLevel(t *testing.T) {
+	var buf bytes.Buffer
+	lg := New("info", &buf, false)
+	lg.Info("event added")
+	lg.Warn("connection lost, trying to restore it")
 
-	require.Contains(t, output, "event validation check", "should contain the message")
+	out := buf.String()
+	require.Contains(t, out, "event added")
+	require.Contains(t, out, "connection lost, trying to restore it")
+	require.NotContains(t, out, "event validation check") // Debug не должен попасть
+}
 
-	output = captureOutput(func(w io.Writer) {
-		log := New("info", w, false)
-		log.Info("event added", "event_id", 10)
-		log.Warn("connection lost, trying to restore it")
-	})
+func TestLogger_WarnLevel(t *testing.T) {
+	var buf bytes.Buffer
+	lg := New("warn", &buf, false)
+	lg.Info("event added")
+	lg.Warn("connection lost, trying to restore it")
 
-	require.Contains(t, output, "event added", "should contain the message")
+	out := buf.String()
+	require.NotContains(t, out, "event added") // Info не должен попасть
+	require.Contains(t, out, "connection lost, trying to restore it")
+}
 
-	require.Contains(t, output, "connection lost, trying to restore it", "should contain the message")
+func TestLogger_ErrorLevel(t *testing.T) {
+	var buf bytes.Buffer
+	lg := New("error", &buf, false)
+	lg.Info("event added")
+	lg.Error("database connection completely lost")
+	lg.Warn("connection lost, trying to restore it")
+	lg.Debug("event validation check")
 
-	output = captureOutput(func(w io.Writer) {
-		log := New("warn", w, false)
-		log.Info("event added", "event_id", 10)
-		log.Warn("connection lost, trying to restore it")
-	})
-
-	require.Contains(t, output, "connection lost, trying to restore it", "should contain the message")
-
-	output = captureOutput(func(w io.Writer) {
-		log := New("error", w, false)
-		log.Info("event added", "event_id", 10)
-		log.Error("database connection completely lost")
-		log.Warn("connection lost, trying to restore it")
-		log.Debug("event validation check", "event_id", 10)
-	})
-	fmt.Println(output)
-	require.Contains(t, output, "database connection completely lost", "should contain the message")
+	out := buf.String()
+	require.Contains(t, out, "database connection completely lost")
+	require.NotContains(t, out, "event added")
+	require.NotContains(t, out, "connection lost, trying to restore it")
+	require.NotContains(t, out, "event validation check")
 }

@@ -5,20 +5,12 @@ import (
 	"log"
 	"log/slog"
 	"os"
+
+	"github.com/EvGesh4And/anti-bruteforce/config"
 )
 
-// Config describes logger initialization parameters.
-type Config struct {
-	Mod   string `toml:"mod" env:"MOD"`
-	Path  string `toml:"path" env:"PATH"`
-	JSON  bool   `toml:"json" env:"JSON"`
-	Level string `toml:"level" env:"LEVEL"`
-}
-
-// New initializes global slog.Logger according to configuration.
-// It returns created logger and optional io.Closer that should be closed
-// when logger output is a file.
-func NewLogger(cfg Config) (*slog.Logger, io.Closer, error) {
+// NewSlogLogger creates a new slog.Logger instance with the given configuration.
+func NewSlogLogger(cfg config.LoggerConfig) (*slog.Logger, io.Closer, error) {
 	var out io.WriteCloser
 	switch cfg.Mod {
 	case "console", "":
@@ -28,7 +20,8 @@ func NewLogger(cfg Config) (*slog.Logger, io.Closer, error) {
 		if filePath == "" {
 			filePath = "calendar.log"
 		}
-		f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
+		// #nosec G304
+		f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 		if err != nil {
 			log.Printf("error opening log file %s: %s", filePath, err)
 			return nil, nil, err
