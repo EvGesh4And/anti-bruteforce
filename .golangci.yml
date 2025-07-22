@@ -24,7 +24,7 @@ linters-settings:
           - golang.org/x/sync/errgroup
           - google.golang.org/grpc
           - google.golang.org/protobuf/types/known/emptypb
-          - 
+          - github.com/spf13/cobra
       Test:
         files:
           - $test

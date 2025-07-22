@@ -4,7 +4,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -32,7 +31,7 @@ func main() {
 	log.SetOutput(os.Stdout)
 
 	cfg := config.Config{}
-	fmt.Println(cfg)
+
 	err := config.LoadConfig(pathConfigFile, &cfg)
 	if err != nil {
 		log.Printf("error initializing config: %v", err)

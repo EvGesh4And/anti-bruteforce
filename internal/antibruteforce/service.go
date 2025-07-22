@@ -11,12 +11,17 @@ import (
 	"github.com/EvGesh4And/anti-bruteforce/internal/bucket"
 )
 
+type RateLimiter interface {
+	Allow(key string) bool
+	Reset(key string)
+}
+
 // Service implements anti-bruteforce logic.
 type Service struct {
 	logger       *slog.Logger
-	loginBuckets *bucket.Manager
-	passBuckets  *bucket.Manager
-	ipBuckets    *bucket.Manager
+	loginBuckets RateLimiter
+	passBuckets  RateLimiter
+	ipBuckets    RateLimiter
 
 	mu         sync.RWMutex
 	whitelist  map[string]netip.Prefix

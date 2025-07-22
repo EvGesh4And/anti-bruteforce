@@ -1,0 +1,8 @@
+version: "3.8"
+
+services:
+  antibruteforce:
+    image: antibruteforce:develop
+    container_name: antibruteforce
+    ports:
+      - "8081:8081"   # gRPC
