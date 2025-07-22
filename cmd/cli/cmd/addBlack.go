@@ -22,14 +22,16 @@ var addBlackCmd = &cobra.Command{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			log.Fatalf("grpc dial: %v", err)
+			log.Printf("grpc dial: %v", err)
+			return
 		}
 		defer conn.Close()
 
 		client := pb.NewAntiBruteforceClient(conn)
 		_, err = client.AddToBlacklist(context.Background(), &pb.NetworkRequest{Network: blackNet})
 		if err != nil {
-			log.Fatalf("add-black failed: %v", err)
+			log.Printf("add-black failed: %v", err)
+			return
 		}
 	},
 }

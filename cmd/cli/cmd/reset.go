@@ -24,7 +24,8 @@ var resetCmd = &cobra.Command{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			log.Fatalf("grpc dial failed: %v", err)
+			log.Printf("grpc dial failed: %v", err)
+			return
 		}
 		defer conn.Close()
 
@@ -34,7 +35,8 @@ var resetCmd = &cobra.Command{
 			Ip:    resetIP,
 		})
 		if err != nil {
-			log.Fatalf("reset failed: %v", err)
+			log.Printf("reset failed: %v", err)
+			return
 		}
 	},
 }

@@ -44,6 +44,9 @@ func (h *HandlerMiddleware) Handle(ctx context.Context, rec slog.Record) error {
 	if c.IP != "" {
 		rec.Add("ip", c.IP)
 	}
+	if c.Network != "" {
+		rec.Add("network", c.Network)
+	}
 	return h.next.Handle(ctx, rec)
 }
 
@@ -67,6 +70,7 @@ type logCtx struct {
 	Login     string
 	Password  string
 	IP        string
+	Network   string
 }
 
 type keyType int
@@ -114,6 +118,28 @@ func WithLogPassword(ctx context.Context, password string) context.Context {
 	}
 	return context.WithValue(ctx, key, logCtx{
 		Password: password,
+	})
+}
+
+// WithLogIP attaches an IP address to the logging context.
+func WithLogIP(ctx context.Context, ip string) context.Context {
+	if c, ok := ctx.Value(key).(logCtx); ok {
+		c.IP = ip
+		return context.WithValue(ctx, key, c)
+	}
+	return context.WithValue(ctx, key, logCtx{
+		IP: ip,
+	})
+}
+
+// WithLogNetwork attaches a network to the logging context.
+func WithLogNetwork(ctx context.Context, network string) context.Context {
+	if c, ok := ctx.Value(key).(logCtx); ok {
+		c.Network = network
+		return context.WithValue(ctx, key, c)
+	}
+	return context.WithValue(ctx, key, logCtx{
+		Network: network,
 	})
 }
 

@@ -22,14 +22,16 @@ var delBlackCmd = &cobra.Command{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			log.Fatalf("grpc dial: %v", err)
+			log.Printf("grpc dial: %v", err)
+			return
 		}
 		defer conn.Close()
 
 		client := pb.NewAntiBruteforceClient(conn)
 		_, err = client.RemoveFromBlacklist(context.Background(), &pb.NetworkRequest{Network: noBlackNet})
 		if err != nil {
-			log.Fatalf("del-black failed: %v", err)
+			log.Printf("del-black failed: %v", err)
+			return
 		}
 	},
 }

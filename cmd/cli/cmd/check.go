@@ -26,7 +26,8 @@ var checkCmd = &cobra.Command{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			log.Fatalf("gRPC connect error: %v", err)
+			log.Printf("gRPC connect error: %v", err)
+			return
 		}
 		defer conn.Close()
 
@@ -37,7 +38,8 @@ var checkCmd = &cobra.Command{
 			Ip:       ip,
 		})
 		if err != nil {
-			log.Fatalf("check failed: %v", err)
+			log.Printf("check failed: %v", err)
+			return
 		}
 
 		fmt.Println("OK:", resp.Ok)

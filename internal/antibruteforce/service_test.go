@@ -30,32 +30,56 @@ func TestService_CheckRateLimiting(t *testing.T) {
 	login := "user1"
 	pass := "pass1"
 
-	// Allow 2 attempts
-	assert.True(t, svc.Check(ctx, login, pass, ip))
-	assert.True(t, svc.Check(ctx, login, pass, ip))
+	ok, err := svc.Check(ctx, login, pass, ip)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 
-	// 3rd attempt should be blocked
-	assert.False(t, svc.Check(ctx, login, pass, ip))
+	ok, err = svc.Check(ctx, login, pass, ip)
+	assert.True(t, ok)
+	assert.NoError(t, err)
+
+	ok, err = svc.Check(ctx, login, pass, ip)
+	assert.False(t, ok)
+	assert.NoError(t, err)
 }
 
 func TestService_Whitelist(t *testing.T) {
 	svc := newTestService()
 	ctx := context.Background()
 
-	err := svc.AddToWhitelist("192.168.1.0/24")
+	err := svc.AddToWhitelist(ctx, "192.168.1.0/24")
 	assert.NoError(t, err)
 
-	assert.True(t, svc.Check(ctx, "login", "pass", "192.168.1.10")) // should always pass
+	ok, err := svc.Check(ctx, "login", "pass", "192.168.1.10")
+	assert.True(t, ok)
+	assert.NoError(t, err)
+
+	err = svc.RemoveFromWhitelist(ctx, "192.168.1.0/24")
+	assert.NoError(t, err)
+
+	// После удаления из белого списка — ограничение по лимитам
+	ok, err = svc.Check(ctx, "login", "pass", "192.168.1.10")
+	assert.True(t, ok)
+	assert.NoError(t, err)
 }
 
 func TestService_Blacklist(t *testing.T) {
 	svc := newTestService()
 	ctx := context.Background()
 
-	err := svc.AddToBlacklist("10.0.0.0/8")
+	err := svc.AddToBlacklist(ctx, "10.0.0.0/8")
 	assert.NoError(t, err)
 
-	assert.False(t, svc.Check(ctx, "login", "pass", "10.1.1.1")) // should always fail
+	ok, err := svc.Check(ctx, "login", "pass", "10.1.1.1")
+	assert.False(t, ok)
+	assert.NoError(t, err)
+
+	err = svc.RemoveFromBlacklist(ctx, "10.0.0.0/8")
+	assert.NoError(t, err)
+
+	ok, err = svc.Check(ctx, "login", "pass", "10.1.1.1")
+	assert.True(t, ok)
+	assert.NoError(t, err)
 }
 
 func TestService_Reset(t *testing.T) {
@@ -65,24 +89,53 @@ func TestService_Reset(t *testing.T) {
 	ip := "172.16.0.1"
 	login := "admin"
 
-	// Первая и вторая попытки — валидные
-	assert.True(t, svc.Check(ctx, login, "pass1", ip))
-	assert.True(t, svc.Check(ctx, login, "pass2", ip))
+	ok, err := svc.Check(ctx, login, "pass1", ip)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 
-	// 3-я попытка — превысит лимит login или ip
-	assert.False(t, svc.Check(ctx, login, "pass3", ip))
+	ok, err = svc.Check(ctx, login, "pass2", ip)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 
-	// Сброс login и ip, но НЕ password
-	svc.Reset(login, ip)
+	ok, err = svc.Check(ctx, login, "pass3", ip)
+	assert.False(t, ok)
+	assert.NoError(t, err)
 
-	// Новая попытка с новым паролем (чтобы пароль не блокировал)
-	assert.True(t, svc.Check(ctx, login, "pass4", ip))
+	svc.Reset(ctx, login, ip)
+
+	ok, err = svc.Check(ctx, login, "pass4", ip)
+	assert.True(t, ok)
+	assert.NoError(t, err)
 }
 
 func TestService_InvalidIP(t *testing.T) {
 	svc := newTestService()
 	ctx := context.Background()
 
-	ok := svc.Check(ctx, "login", "pass", "invalid_ip")
+	ok, err := svc.Check(ctx, "login", "pass", "invalid_ip")
 	assert.False(t, ok)
+	assert.ErrorIs(t, err, ErrInvalidIP)
+}
+
+func TestService_InvalidCIDR(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	err := svc.AddToWhitelist(ctx, "invalid_cidr")
+	assert.ErrorIs(t, err, ErrInvalidNetwork)
+
+	err = svc.AddToBlacklist(ctx, "invalid_cidr")
+	assert.ErrorIs(t, err, ErrInvalidNetwork)
+
+	err = svc.RemoveFromWhitelist(ctx, "invalid_cidr")
+	assert.ErrorIs(t, err, ErrInvalidNetwork)
+
+	err = svc.RemoveFromBlacklist(ctx, "invalid_cidr")
+	assert.ErrorIs(t, err, ErrInvalidNetwork)
+}
+
+func TestService_Shutdown(_ *testing.T) {
+	svc := newTestService()
+	svc.Shutdown()
+	// Здесь просто проверяем, что метод выполняется без паники
 }

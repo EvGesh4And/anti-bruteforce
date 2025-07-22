@@ -22,14 +22,16 @@ var addWhiteCmd = &cobra.Command{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			log.Fatalf("grpc dial: %v", err)
+			log.Printf("grpc dial: %v", err)
+			return
 		}
 		defer conn.Close()
 
 		client := pb.NewAntiBruteforceClient(conn)
 		_, err = client.AddToWhitelist(context.Background(), &pb.NetworkRequest{Network: whiteNet})
 		if err != nil {
-			log.Fatalf("add-white failed: %v", err)
+			log.Printf("add-white failed: %v", err)
+			return
 		}
 	},
 }

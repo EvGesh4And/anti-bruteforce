@@ -22,14 +22,16 @@ var delWhiteCmd = &cobra.Command{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		)
 		if err != nil {
-			log.Fatalf("grpc dial: %v", err)
+			log.Printf("grpc dial: %v", err)
+			return
 		}
 		defer conn.Close()
 
 		client := pb.NewAntiBruteforceClient(conn)
 		_, err = client.RemoveFromWhitelist(context.Background(), &pb.NetworkRequest{Network: noWhiteNet})
 		if err != nil {
-			log.Fatalf("del-white failed: %v", err)
+			log.Printf("del-white failed: %v", err)
+			return
 		}
 	},
 }
